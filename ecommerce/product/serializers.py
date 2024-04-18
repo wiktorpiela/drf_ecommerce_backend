@@ -14,6 +14,13 @@ class ProductSerializer(serializers.ModelSerializer):
         model=Product
         fields = ('name', 'description', 'price', 'brand', 'category', 'ratings', 'stock', 'user', 'created_at', 'images',)
 
+        extra_kwargs = {
+            'name': {'required': True, 'allow_blank': False},
+            'price': {'required': True, 'allow_blank': False},
+            'brand': {'required': True, 'allow_blank': False},
+            'category': {'required': True, 'allow_blank': False},
+        }
+
     def create(self, validated_data):
         images_data = self.context.get('request').FILES.getlist('images') 
         product = Product.objects.create(**validated_data)
