@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
-
-
 class Product(models.Model):
     name = models.CharField(max_length=200, default='', blank=False)
     description = models.TextField(max_length=1000, default='', blank=False)
@@ -27,3 +24,8 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return f'{self.name} - {self.brand}'
+    
+class ProductImages(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, related_name='images')
+    image = models.ImageField(upload_to='products')
+
