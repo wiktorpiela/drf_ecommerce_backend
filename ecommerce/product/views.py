@@ -20,32 +20,10 @@ class Products(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         
-class ProductDetails(generics.RetrieveAPIView):
+class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-@api_view(['POST'])
-def upload_product_images(request):
-    data = request.data
-    files = request.FILES.getlist('images')
+    def perform_update(self, serializer):
+        serializer.save()
 
-    # print('files', files)
-    # print('data', data)
-
-    images = []
-    for file in files:
-        image = ProductImages.objects.create(product=Product(data['product']), image=file)
-        images.append(image)
-
-    serializer = ProductImagesSerializer(images, many=True)
-
-    return Response(serializer.data)
-
-# class UploadProductImages(generics.CreateAPIView):
-#     queryset = ProductImages.objects.all()
-#     serializer_class = ProductImageSerializer
-
-#     def perform_create(self, serializer):
-#         product_id = self.request.data.get('product')
-#         product = Product.objects.get(pk=product_id)
-#         serializer.save(product=product)
