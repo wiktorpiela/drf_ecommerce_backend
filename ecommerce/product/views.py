@@ -7,6 +7,7 @@ from .paginators import ProductPaginator
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import permissions
+from .permissions import IsProductOwnerOrReadOnly
 
 
 class Products(generics.ListCreateAPIView):
@@ -23,6 +24,7 @@ class Products(generics.ListCreateAPIView):
 class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [IsProductOwnerOrReadOnly]
 
     def perform_update(self, serializer):
         serializer.save()
