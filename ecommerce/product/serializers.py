@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.validators import MinValueValidator, MaxValueValidator
 from .models import *
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -6,13 +7,32 @@ class ProductImagesSerializer(serializers.ModelSerializer):
         model = ProductImages
         fields = '__all__'
 
+class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+    product = serializers.StringRelatedField()
+    rating = serializers.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(5)
+            ]
+        )
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+    def validate_rating(self, rating):
+        if rating < 1 or rating > 5:
+            raise serializers.ValidationError("rating must be between 1 and 5.")
+        return rating
+
 class ProductSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
     images = ProductImagesSerializer(many=True, read_only=True, required=False)
+    review = ReviewSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model=Product
-        fields = ('id', 'name', 'description', 'price', 'brand', 'category', 'ratings', 'stock', 'user', 'created_at', 'images',)
+        fields = ('id', 'name', 'description', 'price', 'brand', 'category', 'ratings', 'stock', 'user', 'created_at', 'images', 'review',)
 
         extra_kwargs = {
             'name': {'required': True, 'allow_blank': False},
@@ -55,8 +75,4 @@ class ProductSerializer(serializers.ModelSerializer):
             image.delete()
         return instance
     
-class ReviewSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Review
-        fields = '__all__'
