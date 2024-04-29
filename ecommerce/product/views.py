@@ -1,11 +1,12 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from  django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, ProductImages
-from .serializers import ProductSerializer, ProductImagesSerializer
+from .serializers import ProductSerializer, ReviewSerializer
 from .filters import ProductsFilter
 from .paginators import ProductPaginator
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import permissions
 from .permissions import IsProductOwnerOrReadOnly
 
@@ -32,3 +33,18 @@ class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"message": "Product deleted successfully"})
+    
+class ReviewCreateUpdate(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, format=None):
+        serializer = ReviewSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+            return Response(status=status.HTTP_201_CREATED)
+        
+        return Response({'message': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        pass
