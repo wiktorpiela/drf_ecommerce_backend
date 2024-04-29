@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework import permissions
 from .permissions import IsProductOwnerOrReadOnly
 
-
 class Products(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -29,3 +28,7 @@ class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save()
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Product deleted successfully"})
