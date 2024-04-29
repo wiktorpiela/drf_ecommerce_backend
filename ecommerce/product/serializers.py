@@ -54,3 +54,9 @@ class ProductSerializer(serializers.ModelSerializer):
         for image in images:
             image.delete()
         return instance
+    
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = '__all__'
