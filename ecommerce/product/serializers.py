@@ -10,20 +10,11 @@ class ProductImagesSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
     product = serializers.StringRelatedField()
-    rating = serializers.IntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(5)
-            ]
-        )
+    
     class Meta:
         model = Review
         fields = '__all__'
 
-    def validate_rating(self, rating):
-        if rating < 1 or rating > 5:
-            raise serializers.ValidationError("rating must be between 1 and 5.")
-        return rating
 
 class ProductSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
