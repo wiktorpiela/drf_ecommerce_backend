@@ -39,32 +39,12 @@ class ReviewCreateUpdate(APIView):
 
     def post(self, request, format=None):
         serializer = ReviewSerializer(data=request.data)
-
-        if serializer.is_valid():
-            rating = int(request.data['rating'])
-            product = Product.objects.get(id = request.data['product'])
-            review = product.review.filter(user=self.request.user)
-
-            if rating < 1 or rating > 5:
-                return Response({'message': 'Rating must be an integer between 1 and 5 included'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            if review.exists():
-                new_review = {
-                    'rating': request.data['rating'],
-                    'comment': request.data['comment'],
-                }
-                review.update(**new_review)
-                rating = product.review.aggregate(avg_rating=Avg('rating'))
-                product.rating = rating['avg_rating']
-                product.save()
-
-            else:
-                serializer.save(user=self.request.user)
-                
-
-            return Response(status=status.HTTP_201_CREATED)
         
-        return Response({'message': 'Something went wrong'}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         pass
