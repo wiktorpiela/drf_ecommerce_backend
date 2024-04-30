@@ -23,7 +23,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         product_id = data.get('product').id
         rating = data.get('rating')
         comment = data.get('comment')
-        
+
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
@@ -47,6 +47,20 @@ class ReviewSerializer(serializers.ModelSerializer):
         product.save()
 
         return validated_data
+    
+    def update(self, instance, validated_data):
+        instance.rating = validated_data.get('rating', instance.rating)
+        instance.comment = validated_data.get('comment', instance.comment)
+        instance.user = validated_data.get('user', instance.user)
+
+        # update mean rating in product
+        product = instance.product
+        avg_rating = product.review.aggregate(avg_rating=Avg('rating'))
+        product.ratings = avg_rating['avg_rating']
+        product.save()
+        instance.save()
+
+        return instance
 
 class ProductSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
