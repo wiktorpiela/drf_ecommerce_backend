@@ -40,9 +40,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product_id = validated_data['product'].id
         product = Product.objects.get(id=product_id)
-        avg_rating = product.review.aggregate(avg_rating=Avg('rating'))
 
         Review.objects.create(**validated_data)
+        avg_rating = product.review.aggregate(avg_rating=Avg('rating'))
         product.ratings = avg_rating['avg_rating']
         product.save()
 
@@ -111,5 +111,3 @@ class ProductSerializer(serializers.ModelSerializer):
         for image in images:
             image.delete()
         return instance
-    
-
