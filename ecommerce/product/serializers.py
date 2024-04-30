@@ -1,5 +1,5 @@
 from rest_framework import serializers
-# from account.serializers import UserSerializer
+from django.db.models import Avg
 from .models import *
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -8,6 +8,7 @@ class ProductImagesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Review
         fields = ('id', 'product', 'user', 'rating', 'comment',)
@@ -35,6 +36,17 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'comment': 'Comment cannot be empty'})
 
         return data
+    
+    def create(self, validated_data):
+        product_id = validated_data['product'].id
+        product = Product.objects.get(id=product_id)
+        avg_rating = product.review.aggregate(avg_rating=Avg('rating'))
+
+        Review.objects.create(**validated_data)
+        product.ratings = avg_rating['avg_rating']
+        product.save()
+
+        return validated_data
 
 class ProductSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
