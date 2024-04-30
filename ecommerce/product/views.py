@@ -2,6 +2,7 @@ from rest_framework import generics, status
 from  django_filters.rest_framework import DjangoFilterBackend
 from .models import Product, ProductImages, Review
 from .serializers import ProductSerializer, ReviewSerializer
+from rest_framework.decorators import permission_classes
 from .filters import ProductsFilter
 from .paginators import ProductPaginator
 from django.db.models import Avg
@@ -37,9 +38,8 @@ class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
 class ReviewCreateUpdate(APIView):
 
     def get_permissions(self):
-        print(self.request.method)
-        return [IsOwnerOrReadOnly() if self.request.method=='PUT' else permissions.IsAuthenticated()]
-    
+        return [IsOwnerOrReadOnly()] if self.request.method == 'PUT' else [permissions.IsAuthenticated()]
+
     def post(self, request, format=None):
         serializer = ReviewSerializer(data=request.data)
         
