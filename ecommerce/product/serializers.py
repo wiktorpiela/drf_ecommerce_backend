@@ -1,5 +1,5 @@
 from rest_framework import serializers
-#from account.serializers import UserSerializer
+# from account.serializers import UserSerializer
 from .models import *
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class ProductImagesSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = ('id', 'product', 'rating', 'comment',)
+        fields = ('id', 'product', 'user', 'rating', 'comment',)
 
         extra_kwargs = {
             'product': {'required': True},
@@ -22,7 +22,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         product_id = data.get('product').id
         rating = data.get('rating')
         comment = data.get('comment')
-
+        
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
