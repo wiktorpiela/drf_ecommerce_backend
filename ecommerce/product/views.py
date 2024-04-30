@@ -41,8 +41,15 @@ class ReviewCreateUpdate(APIView):
         serializer = ReviewSerializer(data=request.data)
         
         if serializer.is_valid():
-            serializer.save(user=self.request.user)
+            product = Product.objects.get(id=request.data['product'])
+            
+            if product.review.filter(user=self.request.user).exists():
+                return Response({'error': 'Review already posted. Only update or delete actions are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            else:
+                serializer.save(user=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
