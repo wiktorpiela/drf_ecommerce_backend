@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.core.validators import MinValueValidator, MaxValueValidator
+#from account.serializers import UserSerializer
 from .models import *
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -8,13 +8,33 @@ class ProductImagesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    product = serializers.StringRelatedField()
-    
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = ('id', 'product', 'rating', 'comment',)
 
+        extra_kwargs = {
+            'product': {'required': True},
+            'rating': {'required': True},
+            'comment': {'required': True}
+        }
+
+    def validate(self, data):
+        product_id = data.get('product').id
+        rating = data.get('rating')
+        comment = data.get('comment')
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError({'product': 'Product does not exist'})
+        
+        if rating < 1 or rating > 5:
+            raise serializers.ValidationError({'rating':'Rating an integer only from range 1 to 5.'})
+        
+        if not comment.strip():
+            raise serializers.ValidationError({'comment': 'Comment cannot be empty'})
+
+        return data
 
 class ProductSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField()
