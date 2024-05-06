@@ -11,7 +11,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
     class Meta:
         model = Review
-        fields = ('id', 'product', 'user', 'rating', 'comment',)
+        fields = ('id', 'product', 'user', 'rating', 'comment', 'created_at',)
 
         extra_kwargs = {
             'product': {'required': True},
