@@ -36,18 +36,22 @@ class ProductDetails(generics.RetrieveUpdateDestroyAPIView):
         return Response({"message": "Product deleted successfully"})
     
 class ReviewCreateUpdate(APIView):
-
-    def get_permissions(self):
-        return [IsOwnerOrReadOnly()] if self.request.method == 'PUT' else [permissions.IsAuthenticated()]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
         serializer = ReviewSerializer(data=request.data)
         
         if serializer.is_valid():
             product = Product.objects.get(id=request.data['product'])
-            
-            if product.review.filter(user=self.request.user).exists():
-                return Response({'error': 'Review already posted. Only update or delete actions are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+            review = product.review.filter(user=self.request.user)
+
+            if review.exists():
+                new_review = {'rating': request.data['rating'], 'comment': request.data['comment']}
+                review.update(**new_review)
+                rating = product.review.aggregate(avg_ratings = Avg('rating'))
+                product.ratings = rating['avg_ratings']
+                product.save()
+                return Response({'message': 'Review successfully updated'}, status=status.HTTP_200_OK)
             
             elif product.user == self.request.user:
                 return Response({'error': 'You are not allowed to post review to your own product.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -58,16 +62,3 @@ class ReviewCreateUpdate(APIView):
         
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, pk):
-        try:
-            review = Review.objects.get(pk=pk)
-            serializer = ReviewSerializer(review, data=request.data)
-
-            if serializer.is_valid():
-                serializer.save(user = self.request.user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Review.DoesNotExist:
-            return Response({'error': 'Review doesnt exist'}, status=status.HTTP_400_BAD_REQUEST)
