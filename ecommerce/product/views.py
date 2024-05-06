@@ -9,7 +9,7 @@ from django.db.models import Avg
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import permissions
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly, IsOwnerOrAdmin
 
 class Products(generics.ListCreateAPIView):
     queryset = Product.objects.all()
@@ -62,3 +62,20 @@ class ReviewCreateUpdate(APIView):
         
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, pk):
+        try:
+            instance = Review.objects.get(pk=pk)
+            product = instance.product
+        except Review.DoesNotExist:
+            return Response({'message': 'This review does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not IsOwnerOrAdmin().has_object_permission(request, self, instance):
+            return Response({"message": "You do not have permission to delete this object."}, status=status.HTTP_403_FORBIDDEN)
+        
+        instance.delete()
+        #update overall rating of product once review deleted
+        rating = product.review.aggregate(avg_ratings = Avg('rating'))
+        product.ratings = rating['avg_ratings']
+        product.save()
+        return Response({'message': 'Review has been deleted'}, status=status.HTTP_204_NO_CONTENT)
