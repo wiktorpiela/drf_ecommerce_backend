@@ -163,3 +163,14 @@ AWS_S3_FILE_OVERWRITE=False
 AWS_DEFAULT_ACL=None
 AWS_S3_VERIFY=True
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+#email setup
+EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_PORT = os.environ['EMAIL_PORT']
+EMAIL_USE_TLS:False
+EMAIL_USE_SSL:False
