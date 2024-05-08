@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 from datetime import datetime, timedelta
 from .utils.account_utils import get_current_host
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.conf import settings
 
 
 class UserList(generics.ListCreateAPIView):
@@ -37,12 +38,13 @@ class ForgotPassword(APIView):
         link = f'{host}/api/reset_password/token'
         body = f"Your password reset link is: {link}"
 
-        send_mail(
-            'Password reset for eShop',
-            body,
-            'noreply@eshop.com',
-            [data['email']],
-        )
+        email = EmailMessage(
+            subject=f'Password reset for eShop',
+            body = body,
+            from_email= settings.DEFAULT_FROM_EMAIL,
+            to=[data['email']])
+        email.content_subtype = "html"
+        email.send(fail_silently=False)
 
         return Response({'message': f"Password reset email sent to {data['email']}"})
 
