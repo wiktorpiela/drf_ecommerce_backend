@@ -4,7 +4,7 @@ from .views import *
 app_name='accounts'
 urlpatterns = [
     path('users/', UserList.as_view(), name='usersView'),
-    path('forgot-password/', ForgotPassword.as_view(), name='ForgotPassword')
-
+    path('forgot-password/', ForgotPassword.as_view(), name='ForgotPassword'),
+    path('reset-password/<str:token>/', ResetPassword.as_view(), name='ResetPassword'),
 ]
 
